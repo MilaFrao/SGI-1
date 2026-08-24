@@ -16,6 +16,8 @@ public sealed class SqlServerConnectionTester : IConnectionTester
             {
                 DataSource = request.Server,
                 InitialCatalog = request.Database,
+                UserID = request.User,
+                Password = request.Password,
                 TrustServerCertificate = true,
                 ConnectTimeout = 10
             };
@@ -29,17 +31,17 @@ public sealed class SqlServerConnectionTester : IConnectionTester
                 true,
                 "Conexión establecida correctamente.");
         }
-        catch (SqlException)
+        catch (SqlException ex)
         {
             return new TestConnectionResponse(
                 false,
-                "No fue posible establecer la conexión con la base de datos.");
+                $"Error SQL: {ex.Number} - {ex.Message}");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             return new TestConnectionResponse(
                 false,
-                "Ocurrió un error al intentar establecer la conexión.");
+                $"Ocurrió un error al intentar establecer la conexión: {ex.Message}");
         }
     }
 }

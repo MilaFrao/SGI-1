@@ -1,3 +1,3 @@
 namespace ValidacionInventario.Application.Connections.Contracts;
 
-public sealed record TestConnectionResponse(bool Succes, string Message);
+public sealed record TestConnectionResponse(bool Success, string Message);
