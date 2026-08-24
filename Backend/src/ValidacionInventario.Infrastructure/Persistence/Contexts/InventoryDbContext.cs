@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using ValidacionInventario.Infrastructure.Persistence.Entities;
+using ValidacionInventario.Infrastructure.Persistence.PhysicalInventory;
 
 namespace ValidacionInventario.Infrastructure.Persistence.Contexts;
 
@@ -11,6 +12,8 @@ public partial class InventoryDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<PhysicalInventoryQueryResult> PhysicalInventoryResults => Set<PhysicalInventoryQueryResult>();
 
     public virtual DbSet<ConfirmacionDeposito> ConfirmacionDepositos { get; set; }
 
@@ -29,6 +32,8 @@ public partial class InventoryDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Modern_Spanish_CI_AS");
+
+        modelBuilder.Entity<PhysicalInventoryQueryResult>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<ConfirmacionDeposito>(entity =>
         {
