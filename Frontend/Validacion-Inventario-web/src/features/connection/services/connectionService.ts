@@ -1,6 +1,6 @@
-import type { TestConnectionRequest,TestConnectionResponse } from "./connection";
+import type { TestConnectionRequest,TestConnectionResponse } from "../types/connection";
 
-const API_BASE_URL = import.meta.env.local.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function testConnection(
     request: TestConnectionRequest,

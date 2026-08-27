@@ -7,7 +7,7 @@ namespace ValidacionInventario.Infrastructure.Persistence.PhysicalInventory;
 
 public sealed class PhysicalInventoryRepository : IPhysicalInventoryRepository
 {
-    private const string Query = """
+    public const string RawQueryText = """
         WITH CalculosBase AS (
             SELECT
                 m1.NumeroPagina,
@@ -52,19 +52,25 @@ public sealed class PhysicalInventoryRepository : IPhysicalInventoryRepository
         """;
 
     private readonly InventoryDbContext _context;
+    private readonly InventoryVerification.VerificationRepository _verificationRepository;
 
-    public PhysicalInventoryRepository(InventoryDbContext context)
+    public PhysicalInventoryRepository(
+        InventoryDbContext context,
+        InventoryVerification.VerificationRepository verificationRepository)
     {
         _context = context;
+        _verificationRepository = verificationRepository;
     }
 
     public async Task<IReadOnlyList<PhysicalInventoryItem>> GetItemsAsync(
         CancellationToken cancellationToken = default)
     {
         var rows = await _context.PhysicalInventoryResults
-            .FromSqlRaw(Query)
+            .FromSqlRaw(RawQueryText)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        await _verificationRepository.GetAllAsync(cancellationToken);
 
         return rows.Select(r => new PhysicalInventoryItem(
             r.NumeroPagina, r.CodigoBarra, r.Referencia,
