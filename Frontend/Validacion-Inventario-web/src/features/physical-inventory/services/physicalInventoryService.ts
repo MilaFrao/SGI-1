@@ -1,6 +1,6 @@
 import type { PhysicalInventoryItem } from "../types/physicalInventory";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from "../../../config/apiConfig";
 
 export async function getPhysicalInventory(): Promise<PhysicalInventoryItem[]> {
     const response = await fetch(`${API_BASE_URL}/api/physical-inventory`);

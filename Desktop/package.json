@@ -1,0 +1,28 @@
+{
+    "name": "validacion-inventario-desktop",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build:backend": "dotnet publish ../Backend/src/ValidacionInventario.Api -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./resources/backend",
+        "build:frontend": "cd ../Frontend/Validacion-Inventario-web && npm run build",
+        "build:electron": "electron-builder --win",
+        "build": "npm run build:backend && npm run build:frontend && npm run build:electron"
+    },
+    "devDependencies": {
+        "electron": "^33.0.0",
+        "electron-builder": "^25.0.0"
+    },  
+    "build": {
+            "appId": "com.samuelmiladelaroca.validacioninventario",
+            "productName": "Validación de Inventario",
+            "files": ["main.js", "preload.js"],
+            "extraResources": [
+            { "from": "resources/backend", "to": "backend" },
+            { "from": "../Frontend/Validacion-Inventario-web/dist", "to": "frontend" }
+            ],
+            "win": {
+            "target": "nsis"
+            }
+        }  
+}
