@@ -1,3 +1,6 @@
+// features/physical-inventory/types/physicalInventory.ts
+export type EstadoVerificacion = "Pendiente" | "Verificado" | "Modificado";
+
 export interface PhysicalInventoryItem {
     numeroPagina: number;
     codigoBarra: string;
@@ -12,4 +15,7 @@ export interface PhysicalInventoryItem {
     validacion2: number;
     validacion3: number;
     coincidencia: string;
+    estadoVerificacion: EstadoVerificacion;
+    supervisor: string | null;
+    fechaVerificacion: string | null;
 }
