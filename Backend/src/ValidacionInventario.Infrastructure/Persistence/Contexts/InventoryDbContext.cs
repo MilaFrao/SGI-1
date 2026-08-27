@@ -33,7 +33,16 @@ public partial class InventoryDbContext : DbContext
     {
         modelBuilder.UseCollation("Modern_Spanish_CI_AS");
 
-        modelBuilder.Entity<PhysicalInventoryQueryResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<PhysicalInventoryQueryResult>(entity =>
+        {
+            entity.HasNoKey().ToView(null);
+            entity.Property(e => e.Existencia).HasPrecision(18, 2);
+            entity.Property(e => e.Toma1).HasPrecision(18, 2);
+            entity.Property(e => e.Toma2).HasPrecision(18, 2);
+            entity.Property(e => e.Validacion1).HasPrecision(18, 2);
+            entity.Property(e => e.Validacion2).HasPrecision(18, 2);
+            entity.Property(e => e.Validacion3).HasPrecision(18, 2);
+        });
 
         modelBuilder.Entity<ConfirmacionDeposito>(entity =>
         {

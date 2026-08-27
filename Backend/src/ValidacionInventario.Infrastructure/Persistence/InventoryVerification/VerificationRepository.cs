@@ -23,10 +23,16 @@ public sealed class VerificationRepository : IVerificationRepository
     public async Task UpsertAsync(UpdateVerificationRequest request, CancellationToken cancellationToken = default)
     {
         // Snapshot server-side real, igual que en la versión SQL — nunca confiamos en lo que mande el cliente
-        var current = await _inventoryContext.PhysicalInventoryResults
-            .FromSqlRaw(PhysicalInventory.PhysicalInventoryRepository.RawQueryText)
+        var currentRows = await _inventoryContext.PhysicalInventoryResults
+            .FromSqlRaw(
+                PhysicalInventory.PhysicalInventoryRepository.RawQueryText +
+                " WHERE NumeroPagina = {0} AND CodigoBarra = {1}",
+                request.NumeroPagina,
+                request.CodigoBarra)
             .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.NumeroPagina == request.NumeroPagina && r.CodigoBarra == request.CodigoBarra, cancellationToken)
+            .ToListAsync(cancellationToken);
+
+        var current = currentRows.FirstOrDefault()
             ?? throw new InvalidOperationException("Registro de inventario no encontrado.");
 
         await FileLock.WaitAsync(cancellationToken);
@@ -49,7 +55,6 @@ public sealed class VerificationRepository : IVerificationRepository
 
             existing.Referencia = current.Referencia;
             existing.Verificado = request.Verificado;
-            existing.Supervisor = request.Supervisor;
             existing.FechaVerificacion = DateTime.UtcNow;
             existing.Toma1Snapshot = current.Toma1;
             existing.Toma2Snapshot = current.Toma2;

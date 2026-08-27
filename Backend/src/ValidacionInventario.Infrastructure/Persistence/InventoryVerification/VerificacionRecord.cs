@@ -6,7 +6,6 @@ public sealed class VerificacionRecord
     public string CodigoBarra { get; set; } = null!;
     public string? Referencia { get; set; }
     public bool Verificado { get; set; }
-    public string Supervisor { get; set; } = null!;
     public DateTime FechaVerificacion { get; set; }
     public decimal Toma1Snapshot { get; set; }
     public decimal Toma2Snapshot { get; set; }
