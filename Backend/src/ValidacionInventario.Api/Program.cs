@@ -1,6 +1,9 @@
 using ValidacionInventario.Application;
 using ValidacionInventario.Infrastructure;
 using ValidacionInventario.Api.Endpoints.Connections;
+using ValidacionInventario.Api.Endpoints.PhysicalInventory;
+using ValidacionInventario.Api.Endpoints.InventoryVerification;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
@@ -34,5 +37,7 @@ app.UseCors("FrontendPolicy"); // antes de los endpoints, después de HttpsRedir
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "InventoryValidation API" }));
 app.MapTestConnection();
+app.MapGetPhysicalInventory();
+app.MapUpdateVerification();
 
 app.Run();

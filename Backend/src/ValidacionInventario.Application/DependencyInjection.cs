@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ValidacionInventario.Application.Connections.CU;
+using ValidacionInventario.Application.InventoryVerification.CU;
+using ValidacionInventario.Application.PhysicalInventory.CU;
 
 namespace ValidacionInventario.Application;
 
@@ -9,6 +11,8 @@ public static class DependencyInjection
         this IServiceCollection services)
     {
         services.AddScoped<TestConnectionUseCase>();
+        services.AddScoped<GetPhysicalInventoryUseCase>();
+        services.AddScoped<UpdateVerificationUseCase>();
 
         return services;
     }
