@@ -1,7 +1,7 @@
 // features/inventory-verification/services/inventoryVerificationService.ts
 import type { UpdateVerificationRequest } from "../types/inventoryVerification";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from "../../../config/apiConfig";
 
 export async function updateVerification(request: UpdateVerificationRequest): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/inventory-verifications`, {

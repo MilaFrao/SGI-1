@@ -5,15 +5,26 @@ namespace ValidacionInventario.Application.Connections.CU;
 
 public sealed class TestConnectionUseCase
 {
-    private readonly IConnectionTester _connectionTester;
+    private readonly IConnectionTester _tester;
+    private readonly IConnectionStringProvider _connectionStringProvider;
 
-    public TestConnectionUseCase(IConnectionTester connectionTester)
+    public TestConnectionUseCase(IConnectionTester tester, IConnectionStringProvider connectionStringProvider)
     {
-        _connectionTester = connectionTester;
-    }
-    public Task<TestConnectionResponse> ExecuteAsync(TestConnectionRequest request, CancellationToken cancellationToken=default)
-    {
-        return _connectionTester.TestConnectionAsync(request, cancellationToken);
+        _tester = tester;
+        _connectionStringProvider = connectionStringProvider;
     }
 
+    public async Task<TestConnectionResponse> ExecuteAsync(
+        TestConnectionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _tester.TestConnectionAsync(request, cancellationToken);
+
+        if (result.Success)
+        {
+            _connectionStringProvider.SetConnection(request.Server, request.Database, request.User, request.Password);
+        }
+
+        return result;
+    }
 }

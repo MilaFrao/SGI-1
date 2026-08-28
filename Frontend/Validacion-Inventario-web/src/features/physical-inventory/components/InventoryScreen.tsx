@@ -5,6 +5,7 @@ import { usePhysicalInventory } from "../hooks/usePhysicalInventory";
 import { PhysicalInventoryTable } from "./PhysicalInventoryTable";
 import { updateVerification } from "../../inventory-verification/services/inventoryVerificationService";
 import type { PhysicalInventoryItem } from "../types/physicalInventory";
+import { ExportMenu } from "../../export/components/ExportMenu";
 
 interface InventoryScreenProps {
   server: string;
@@ -24,7 +25,7 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
 
   const handleToggleVerificado = async (item: PhysicalInventoryItem, verificado: boolean) => {
     if (!supervisor.trim()) {
-      setVerificationError("Ingresá tu nombre de supervisor antes de verificar un registro.");
+      setVerificationError("Ingresa tu nombre de supervisor antes de verificar un registro.");
       return;
     }
 
@@ -41,7 +42,7 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
       });
       await refresh();
     } catch {
-      setVerificationError("No fue posible guardar la verificación. Intentá de nuevo.");
+      setVerificationError("No fue posible guardar la verificación. Intenta de nuevo.");
     } finally {
       setSavingKey(null);
     }
@@ -80,14 +81,17 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
             className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <button
-          onClick={() => refresh()}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md text-xs font-medium text-gray-700 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          {loading ? "Actualizando..." : "Actualizar"}
-        </button>
+        <div className="flex items-center gap-2">
+          <ExportMenu data={data} />
+          <button
+            onClick={() => refresh()}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md text-xs font-medium text-gray-700 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            {loading ? "Actualizando..." : "Actualizar"}
+          </button>
+        </div>
       </div>
 
       {(error || verificationError) && (
