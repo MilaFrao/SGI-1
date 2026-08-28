@@ -7,6 +7,8 @@ const BACKEND_PORT = 5066;
 let backendProcess = null;
 let mainWindow = null;
 
+
+
 function getBackendExePath() {
     const backendFolder = app.isPackaged
     ? path.join(process.resourcesPath, 'backend')
@@ -57,18 +59,26 @@ function waitForBackend(retriesLeft = 30) {
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    webPreferences: {
+        width: 1400,
+        height: 900,
+        minWidth: 1100,
+        minHeight: 700,
+        show: false, // evita el "flash" de ventana chica antes de maximizar
+        webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         contextIsolation: true,
         nodeIntegration: false,
-    },
+        },
+    });
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.maximize();
+        mainWindow.show();
     });
 
     const frontendPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'frontend', 'index.html')
-    : path.join(__dirname, '..', 'Frontend', 'Validacion-Inventario-web', 'dist', 'index.html');
+        ? path.join(process.resourcesPath, 'frontend', 'index.html')
+        : path.join(__dirname, '..', 'Frontend', 'Validacion-Inventario-web', 'dist', 'index.html');
 
     mainWindow.loadFile(frontendPath);
 }

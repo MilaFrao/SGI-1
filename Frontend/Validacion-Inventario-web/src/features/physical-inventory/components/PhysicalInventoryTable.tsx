@@ -30,10 +30,10 @@ export function PhysicalInventoryTable({ data, onToggleVerificado, savingKey }: 
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm flex-1 overflow-hidden flex flex-col">
       <div className="overflow-auto flex-1">
         <table className="w-full text-left border-collapse text-sm">
-          <thead className="bg-gray-50 sticky top-0 z-10 ring-1 ring-gray-200 shadow-sm">
+          <thead className="bg-gray-50 sticky top-0 z-20 ring-1 ring-gray-200 shadow-sm">
             <tr>
-              <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-center text-xs uppercase tracking-wider whitespace-normal min-w-[80px] leading-tight">Nº de<br/>página</th>
-              <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-xs uppercase tracking-wider whitespace-nowrap">Código de barra</th>
+              <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-center text-xs uppercase tracking-wider whitespace-normal min-w-[80px] leading-tight sticky left-0 z-30 bg-gray-50">Nº de<br/>página</th>
+              <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-xs uppercase tracking-wider whitespace-nowrap sticky left-[80px] z-30 bg-gray-50 shadow-[2px_0_4px_rgba(0,0,0,0.06)]">Código de barra</th>
               <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-xs uppercase tracking-wider whitespace-nowrap">Referencia</th>
               <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-right text-xs uppercase tracking-wider whitespace-normal min-w-[90px] leading-tight">Toma<br/>física 1</th>
               <th className="px-4 py-2.5 font-semibold text-gray-600 border-r border-gray-200 text-center text-xs uppercase tracking-wider whitespace-normal min-w-[90px] leading-tight">Usuario 1</th>
@@ -55,8 +55,8 @@ export function PhysicalInventoryTable({ data, onToggleVerificado, savingKey }: 
 
               return (
                 <tr key={rowKey} className={cn("transition-colors group", rowShade(row.estadoVerificacion))}>
-                  <td className="px-4 py-2 border-r border-gray-100 text-center text-gray-400">{row.numeroPagina}</td>
-                  <td className="px-4 py-2 border-r border-gray-100 font-medium text-gray-900">{row.codigoBarra}</td>
+                  <td className="px-4 py-2 border-r border-gray-100 text-center text-gray-400 sticky left-0 z-10 bg-white group-hover:bg-blue-50/50">{row.numeroPagina}</td>
+                  <td className="px-4 py-2 border-r border-gray-100 font-medium text-gray-900 sticky left-[80px] z-10 bg-white group-hover:bg-blue-50/50 shadow-[2px_0_4px_rgba(0,0,0,0.06)]">{row.codigoBarra}</td>
                   <td className="px-4 py-2 border-r border-gray-100 text-gray-600">{row.referencia}</td>
                   <td className="px-4 py-2 border-r border-gray-100 text-right">{row.toma1}</td>
                   <td className="px-4 py-2 border-r border-gray-100 text-center text-gray-500 font-sans text-xs">{row.usuario1}</td>
