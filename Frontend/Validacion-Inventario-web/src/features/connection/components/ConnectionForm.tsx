@@ -1,8 +1,10 @@
 // features/connection/components/ConnectionForm.tsx
 import { useEffect, useState } from "react";
-import { Database, Server, ShieldCheck, KeyRound, RefreshCw, HardDrive, Trash2 } from "lucide-react";
+import { Database, Server, ShieldCheck, KeyRound, RefreshCw, HardDrive } from "lucide-react";
 import { testConnection } from "../services/connectionService";
 import { saveCredentials, loadCredentials, clearCredentials } from "../services/credentialsStorageService";
+import { RecentConnectionTab } from "./RecentConnectionTab";
+import type { StoredCredentials } from "../../../config/apiConfig";
 
 interface ConnectionFormProps {
   onConnected: (server: string, database: string) => void;
@@ -15,55 +17,23 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
   const [dbPassword, setDbPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
+  const [savedCredentials, setSavedCredentials] = useState<StoredCredentials | null>(null);
 
+  // Solo CONSULTA si hay algo guardado, no conecta con nada por su cuenta.
   useEffect(() => {
-    let cancelled = false;
+    loadCredentials().then(setSavedCredentials);
+  }, []);
 
-    async function tryAutoConnect() {
-      const saved = await loadCredentials();
-      if (!saved || cancelled) return;
-
-      setServer(saved.server);
-      setDatabase(saved.database);
-      setDbUser(saved.user);
-      setDbPassword(saved.password);
-      setHasSavedCredentials(true);
-      setIsConnecting(true);
-
-      try {
-        const result = await testConnection(saved);
-        if (cancelled) return;
-        if (result.success) {
-          onConnected(saved.server, saved.database);
-        } else {
-          setError(result.message);
-        }
-      } catch {
-        if (!cancelled) setError("No fue posible reconectar automáticamente. Verificá los datos.");
-      } finally {
-        if (!cancelled) setIsConnecting(false);
-      }
-    }
-
-    tryAutoConnect();
-    return () => {
-      cancelled = true;
-    };
-  }, [onConnected]);
-
-  const handleConnect = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const connectWith = async (credentials: StoredCredentials) => {
     setIsConnecting(true);
     setError(null);
 
     try {
-      const credentials = { server, database, user: dbUser, password: dbPassword };
       const result = await testConnection(credentials);
       if (result.success) {
         await saveCredentials(credentials);
-        setHasSavedCredentials(true);
-        onConnected(server, database);
+        setSavedCredentials(credentials);
+        onConnected(credentials.server, credentials.database);
       } else {
         setError(result.message);
       }
@@ -74,14 +44,38 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
     }
   };
 
-  const handleForgetCredentials = async () => {
+  const handleConnect = (e: React.FormEvent) => {
+    e.preventDefault();
+    connectWith({ server, database, user: dbUser, password: dbPassword });
+  };
+
+  const handleUseSaved = () => {
+    if (!savedCredentials) return;
+    // Reflejamos los valores en el formulario también, por transparencia,
+    // pero la conexión la dispara el usuario, nunca sola al cargar la pantalla.
+    setServer(savedCredentials.server);
+    setDatabase(savedCredentials.database);
+    setDbUser(savedCredentials.user);
+    setDbPassword(savedCredentials.password);
+    connectWith(savedCredentials);
+  };
+
+  const handleForgetSaved = async () => {
     await clearCredentials();
-    setHasSavedCredentials(false);
-    setDbPassword("");
+    setSavedCredentials(null);
   };
 
   return (
     <div className="min-h-screen bg-[#f4f4f5] flex items-center justify-center p-4 selection:bg-blue-100">
+      {savedCredentials && (
+        <RecentConnectionTab
+          credentials={savedCredentials}
+          onUse={handleUseSaved}
+          onForget={handleForgetSaved}
+          isConnecting={isConnecting}
+        />
+      )}
+
       <div className="w-full max-w-md bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
         <div className="bg-[#18181b] px-6 py-4 border-b border-gray-800">
           <div className="flex items-center gap-2">
@@ -186,17 +180,6 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
             <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             Desconectado
           </div>
-
-          {hasSavedCredentials && (
-            <button
-              type="button"
-              onClick={handleForgetCredentials}
-              className="w-full flex items-center justify-center gap-1.5 text-[11px] text-gray-400 hover:text-red-600 transition-colors"
-            >
-              <Trash2 className="w-3 h-3" />
-              Olvidar credenciales guardadas
-            </button>
-          )}
         </form>
       </div>
     </div>
