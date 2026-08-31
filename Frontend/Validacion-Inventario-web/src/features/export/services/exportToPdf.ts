@@ -3,13 +3,14 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { PhysicalInventoryItem } from "../../physical-inventory/types/physicalInventory";
 import { buildExportFilename } from "./exportFilename";
+import { saveExportFile } from "./saveExportFile";
 
 const HEADERS = [
     "Nº pág.", "Cód. barra", "Referencia", "Toma 1", "Usu. 1", "Toma 2", "Usu. 2",
     "Dif. tomas", "Estado", "Existencia", "Valid. 2", "Dif.", "Coincide", "Verificación",
-    ];
+];
 
-    export function exportToPdf(data: PhysicalInventoryItem[]): void {
+export async function exportToPdf(data: PhysicalInventoryItem[]): Promise<void> {
     const doc = new jsPDF({ orientation: "landscape" });
 
     doc.setFontSize(14);
@@ -29,8 +30,10 @@ const HEADERS = [
         body: rows,
         startY: 26,
         styles: { fontSize: 7, cellPadding: 1.5 },
-        headStyles: { fillColor: [24, 24, 27] }, // mismo #18181b del header de tu app
+        headStyles: { fillColor: [24, 24, 27] },
     });
 
-    doc.save(buildExportFilename("pdf"));
+    const bytes = new Uint8Array(doc.output("arraybuffer") as ArrayBuffer);
+
+    await saveExportFile(buildExportFilename("pdf"), bytes, "application/pdf", { name: "PDF", extensions: ["pdf"] });
 }

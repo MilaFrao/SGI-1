@@ -24,8 +24,8 @@ import { exportToPdf } from "../services/exportToPdf";
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleExport = (fn: (data: PhysicalInventoryItem[]) => void) => {
-        fn(data);
+    const handleExport = async (fn: (data: PhysicalInventoryItem[]) => void) => {
+        await fn(data);
         setIsOpen(false);
     };
 

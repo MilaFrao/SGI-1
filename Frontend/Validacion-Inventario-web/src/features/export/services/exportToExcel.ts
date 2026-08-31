@@ -2,8 +2,9 @@
 import * as XLSX from "xlsx";
 import type { PhysicalInventoryItem } from "../../physical-inventory/types/physicalInventory";
 import { buildExportFilename } from "./exportFilename";
+import { saveExportFile } from "./saveExportFile";
 
-export function exportToExcel(data: PhysicalInventoryItem[]): void {
+export async function exportToExcel(data: PhysicalInventoryItem[]): Promise<void> {
     const rows = data.map((item) => ({
         "Nº de página": item.numeroPagina,
         "Código de barra": item.codigoBarra,
@@ -24,14 +25,17 @@ export function exportToExcel(data: PhysicalInventoryItem[]): void {
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
-
-  // Ancho de columnas aproximado, para que no quede todo apretado al abrir
-    worksheet["!cols"] = Object.keys(rows[0] ?? {}).map((key) => ({
-        wch: Math.max(key.length, 14),
-    }));
+    worksheet["!cols"] = Object.keys(rows[0] ?? {}).map((key) => ({ wch: Math.max(key.length, 14) }));
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Físico");
 
-    XLSX.writeFile(workbook, buildExportFilename("xlsx"));
+    const bytes = XLSX.write(workbook, { type: "array", bookType: "xlsx" }) as Uint8Array;
+
+    await saveExportFile(
+        buildExportFilename("xlsx"),
+        bytes,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        { name: "Excel", extensions: ["xlsx"] }
+    );
 }

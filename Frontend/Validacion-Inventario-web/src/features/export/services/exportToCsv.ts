@@ -1,6 +1,7 @@
 // features/export/services/exportToCsv.ts
 import type { PhysicalInventoryItem } from "../../physical-inventory/types/physicalInventory";
 import { buildExportFilename } from "./exportFilename";
+import { saveExportFile } from "./saveExportFile";
 
 const HEADERS = [
     "Nº de página", "Código de barra", "Referencia", "Toma física 1", "Usuario 1",
@@ -26,19 +27,14 @@ function toRow(item: PhysicalInventoryItem): unknown[] {
     ];
 }
 
-export function exportToCsv(data: PhysicalInventoryItem[]): void {
+export async function exportToCsv(data: PhysicalInventoryItem[]): Promise<void> {
     const lines = [HEADERS, ...data.map(toRow)].map((row) => row.map(escapeCsvValue).join(","));
-    const csvContent = "\uFEFF" + lines.join("\n"); // BOM para que Excel abra bien los acentos
+    const csvContent = "\uFEFF" + lines.join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    downloadBlob(blob, buildExportFilename("csv"));
-    }
-
-function downloadBlob(blob: Blob, filename: string): void {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    await saveExportFile(
+        buildExportFilename("csv"),
+        csvContent,
+        "text/csv;charset=utf-8;",
+        { name: "CSV", extensions: ["csv"] }
+    );
 }

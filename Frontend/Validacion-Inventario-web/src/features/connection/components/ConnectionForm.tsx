@@ -1,7 +1,8 @@
 // features/connection/components/ConnectionForm.tsx
-import { useState } from "react";
-import { Database, Server, ShieldCheck, KeyRound, RefreshCw, HardDrive } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Database, Server, ShieldCheck, KeyRound, RefreshCw, HardDrive, Trash2 } from "lucide-react";
 import { testConnection } from "../services/connectionService";
+import { saveCredentials, loadCredentials, clearCredentials } from "../services/credentialsStorageService";
 
 interface ConnectionFormProps {
   onConnected: (server: string, database: string) => void;
@@ -14,6 +15,42 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
   const [dbPassword, setDbPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function tryAutoConnect() {
+      const saved = await loadCredentials();
+      if (!saved || cancelled) return;
+
+      setServer(saved.server);
+      setDatabase(saved.database);
+      setDbUser(saved.user);
+      setDbPassword(saved.password);
+      setHasSavedCredentials(true);
+      setIsConnecting(true);
+
+      try {
+        const result = await testConnection(saved);
+        if (cancelled) return;
+        if (result.success) {
+          onConnected(saved.server, saved.database);
+        } else {
+          setError(result.message);
+        }
+      } catch {
+        if (!cancelled) setError("No fue posible reconectar automáticamente. Verificá los datos.");
+      } finally {
+        if (!cancelled) setIsConnecting(false);
+      }
+    }
+
+    tryAutoConnect();
+    return () => {
+      cancelled = true;
+    };
+  }, [onConnected]);
 
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,13 +58,11 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
     setError(null);
 
     try {
-      const result = await testConnection({
-        server,
-        database,
-        user: dbUser,
-        password: dbPassword,
-      });
+      const credentials = { server, database, user: dbUser, password: dbPassword };
+      const result = await testConnection(credentials);
       if (result.success) {
+        await saveCredentials(credentials);
+        setHasSavedCredentials(true);
         onConnected(server, database);
       } else {
         setError(result.message);
@@ -37,6 +72,12 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleForgetCredentials = async () => {
+    await clearCredentials();
+    setHasSavedCredentials(false);
+    setDbPassword("");
   };
 
   return (
@@ -52,11 +93,8 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
         </div>
 
         <form onSubmit={handleConnect} className="p-6 space-y-5">
-          {/* Aclaración explícita: esto NO es un login de usuario de la app */}
           <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2.5">
-            <p className="text-xs font-medium text-blue-900">
-              Conexión al servidor de base de datos
-            </p>
+            <p className="text-xs font-medium text-blue-900">Conexión al servidor de base de datos</p>
             <p className="text-[11px] text-blue-700 mt-0.5">
               Estas credenciales corresponden a tu servidor SQL Server, no a una cuenta personal de la aplicación.
             </p>
@@ -124,9 +162,7 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
           </div>
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-              {error}
-            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>
           )}
 
           <div className="pt-2">
@@ -150,6 +186,17 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
             <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             Desconectado
           </div>
+
+          {hasSavedCredentials && (
+            <button
+              type="button"
+              onClick={handleForgetCredentials}
+              className="w-full flex items-center justify-center gap-1.5 text-[11px] text-gray-400 hover:text-red-600 transition-colors"
+            >
+              <Trash2 className="w-3 h-3" />
+              Olvidar credenciales guardadas
+            </button>
+          )}
         </form>
       </div>
     </div>
