@@ -1,25 +1,18 @@
-interface SaveFileFilter {
-    name: string;
-    extensions: string[];
-}
-
 export async function saveExportFile(
     filename: string,
     data: Uint8Array | string,
-    mimeType: string,
-    filter: SaveFileFilter
+    mimeType: string
 ): Promise<void> {
     if (window.electronAPI?.saveFile) {
-        const result = await window.electronAPI.saveFile(filename, [filter], data);
-        if (!result.success && !result.canceled) {
-            throw new Error("No fue posible guardar el archivo.");
+        const result = await window.electronAPI.saveFile(filename, data);
+        if (!result.success) {
+        throw new Error("No fue posible guardar el archivo.");
         }
-        return; // si el usuario canceló el diálogo, no es un error
+        return;
     }
 
-  // Fallback para cuando se corre en el navegador (npm run dev sin Electron)
-    const blobData = data instanceof Uint8Array ? new Uint8Array(data) : data;
-    const blob = new Blob([blobData], { type: mimeType });
+  // Fallback para npm run dev sin Electron: descarga directa con el nombre elegido
+    const blob = new Blob([data] as unknown as BlobPart[], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

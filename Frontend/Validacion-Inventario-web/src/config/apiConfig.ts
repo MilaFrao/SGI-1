@@ -5,24 +5,19 @@ export interface StoredCredentials {
     password: string;
 }
 
-interface SaveFileFilter {
-    name: string;
-    extensions: string[];
-}
-
 declare global {
     interface Window {
         electronAPI?: {
         apiBaseUrl: string;
         isElectron?: boolean;
         saveFile?: (
-            suggestedName: string,
-            filters: SaveFileFilter[],
+            filename: string,
             data: Uint8Array | string
-        ) => Promise<{ success: boolean; canceled?: boolean; path?: string }>;
-        saveCredentials?: (credentials: StoredCredentials) => Promise<{ success: boolean }>;
-        loadCredentials?: () => Promise<StoredCredentials | null>;
-        clearCredentials?: () => Promise<{ success: boolean }>;
+        ) => Promise<{ success: boolean; path?: string }>;
+            openExportsFolder?: () => Promise<void>;
+            saveCredentials?: (credentials: StoredCredentials) => Promise<{ success: boolean }>;
+            loadCredentials?: () => Promise<StoredCredentials | null>;
+            clearCredentials?: () => Promise<{ success: boolean }>;
         };
     }
 }

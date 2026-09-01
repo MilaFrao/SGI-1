@@ -13,4 +13,5 @@ public sealed record PhysicalInventoryItemResponse(
     decimal Existencia,
     decimal Validacion2,
     decimal Validacion3,
-    string Coincidencia);
+    string Coincidencia,
+    string EstadoVerificacion);

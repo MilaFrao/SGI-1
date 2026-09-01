@@ -15,7 +15,6 @@ interface InventoryScreenProps {
 
 export function InventoryScreen({ server, database, onDisconnect }: InventoryScreenProps) {
   const { data, loading, error, refresh } = usePhysicalInventory();
-  const [supervisor, setSupervisor] = useState("");
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
 
@@ -24,11 +23,6 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
   }, [refresh]);
 
   const handleToggleVerificado = async (item: PhysicalInventoryItem, verificado: boolean) => {
-    if (!supervisor.trim()) {
-      setVerificationError("Ingresa tu nombre de supervisor antes de verificar un registro.");
-      return;
-    }
-
     setVerificationError(null);
     const key = `${item.numeroPagina}-${item.codigoBarra}`;
     setSavingKey(key);
@@ -38,7 +32,6 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
         numeroPagina: item.numeroPagina,
         codigoBarra: item.codigoBarra,
         verificado,
-        supervisor: supervisor.trim(),
       });
       await refresh();
     } catch {
@@ -70,17 +63,7 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
         </div>
       </header>
 
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shrink-0 gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500">Supervisor:</label>
-          <input
-            type="text"
-            value={supervisor}
-            onChange={(e) => setSupervisor(e.target.value)}
-            placeholder="Tu nombre"
-            className="px-2 py-1 bg-gray-50 border border-gray-200 rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-end shrink-0 gap-4">
         <div className="flex items-center gap-2">
           <ExportMenu data={data} />
           <button

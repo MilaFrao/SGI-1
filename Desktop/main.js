@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, safeStorage, shell } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
@@ -59,6 +59,29 @@ function waitForBackend(retriesLeft = 30) {
     });
 }
 
+function getUniquePath(targetPath) {
+    if (!fs.existsSync(targetPath)) return targetPath;
+
+    const dir = path.dirname(targetPath);
+    const ext = path.extname(targetPath);
+    const base = path.basename(targetPath, ext);
+
+    let counter = 1;
+    let candidate;
+    do {
+        candidate = path.join(dir, `${base} (${counter})${ext}`);
+        counter++;
+    } while (fs.existsSync(candidate));
+
+    return candidate;
+}
+
+function getExportsDir() {
+    const dir = path.join(app.getPath('documents'), 'Validación de Inventario', 'Exportaciones');
+    fs.mkdirSync(dir, { recursive: true });
+    return dir;
+}
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1400,
@@ -89,21 +112,14 @@ function createWindow() {
     function registerIpcHandlers() {
     const CREDENTIALS_PATH = path.join(app.getPath('userData'), 'connection.cred');
 
-    // --- Exportar archivos con diálogo nativo ---
-    ipcMain.handle('save-export-file', async (_event, { suggestedName, filters, data }) => {
-        const result = await dialog.showSaveDialog(mainWindow, {
-        defaultPath: suggestedName,
-        filters,
-        });
+    ipcMain.handle('save-export-file', async (_event, { filename, data }) => {
+    const exportsDir = getExportsDir();
+    const targetPath = getUniquePath(path.join(exportsDir, filename));
 
-        if (result.canceled || !result.filePath) {
-        return { success: false, canceled: true };
-        }
+    const buffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : Buffer.from(data);
+    fs.writeFileSync(targetPath, buffer);
 
-        const buffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : Buffer.from(data);
-        fs.writeFileSync(result.filePath, buffer);
-
-        return { success: true, path: result.filePath };
+    return { success: true, path: targetPath };
     });
 
     // --- Credenciales cifradas ---
@@ -130,11 +146,15 @@ function createWindow() {
     });
 
     ipcMain.handle('credentials-clear', () => {
-            if (fs.existsSync(CREDENTIALS_PATH)) {
-            fs.unlinkSync(CREDENTIALS_PATH);
-            }
-            return { success: true };
-        });
+        if (fs.existsSync(CREDENTIALS_PATH)) {
+        fs.unlinkSync(CREDENTIALS_PATH);
+        }
+        return { success: true };
+    });
+
+    ipcMain.handle('open-exports-folder', () => {
+        shell.openPath(getExportsDir());
+    });
     }
 
     app.whenReady().then(async () => {

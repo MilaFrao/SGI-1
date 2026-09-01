@@ -15,12 +15,14 @@ public sealed class PhysicalInventoryItem
     public decimal Validacion2 { get; }
     public decimal Validacion3 { get; }
     public string Coincidencia { get; }
+    public string EstadoVerificacion { get; }
 
     public PhysicalInventoryItem(
         int numeroPagina, string codigoBarra, string? referencia,
         decimal toma1, string usuario1, decimal toma2, string? usuario2,
         decimal validacion1, string estado, decimal existencia,
-        decimal validacion2, decimal validacion3, string coincidencia)
+        decimal validacion2, decimal validacion3, string coincidencia,
+        string estadoVerificacion)
     {
         NumeroPagina = numeroPagina;
         CodigoBarra = codigoBarra;
@@ -35,5 +37,6 @@ public sealed class PhysicalInventoryItem
         Validacion2 = validacion2;
         Validacion3 = validacion3;
         Coincidencia = coincidencia;
+        EstadoVerificacion = estadoVerificacion;
     }
 }

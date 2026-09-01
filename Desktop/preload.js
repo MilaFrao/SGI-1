@@ -4,8 +4,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     apiBaseUrl: 'http://localhost:5066',
     isElectron: true,
 
-    saveFile: (suggestedName, filters, data) =>
-        ipcRenderer.invoke('save-export-file', { suggestedName, filters, data }),
+    saveFile: (filename, data) =>
+        ipcRenderer.invoke('save-export-file', { filename, data }),
+
+    openExportsFolder: () => ipcRenderer.invoke('open-exports-folder'),
 
     saveCredentials: (credentials) => ipcRenderer.invoke('credentials-save', credentials),
     loadCredentials: () => ipcRenderer.invoke('credentials-load'),

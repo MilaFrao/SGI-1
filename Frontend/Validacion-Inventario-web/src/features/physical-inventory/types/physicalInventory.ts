@@ -16,6 +16,5 @@ export interface PhysicalInventoryItem {
     validacion3: number;
     coincidencia: string;
     estadoVerificacion: EstadoVerificacion;
-    supervisor: string | null;
     fechaVerificacion: string | null;
 }

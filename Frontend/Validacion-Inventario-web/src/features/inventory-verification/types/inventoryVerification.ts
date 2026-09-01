@@ -3,5 +3,4 @@ export interface UpdateVerificationRequest {
     numeroPagina: number;
     codigoBarra: string;
     verificado: boolean;
-    supervisor: string;
 }
