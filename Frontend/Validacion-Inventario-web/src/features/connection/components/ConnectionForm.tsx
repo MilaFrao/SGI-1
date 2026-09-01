@@ -1,7 +1,10 @@
 // features/connection/components/ConnectionForm.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Database, Server, ShieldCheck, KeyRound, RefreshCw, HardDrive } from "lucide-react";
 import { testConnection } from "../services/connectionService";
+import { saveCredentials, loadCredentials, clearCredentials } from "../services/credentialsStorageService";
+import { RecentConnectionTab } from "./RecentConnectionTab";
+import type { StoredCredentials } from "../../../config/apiConfig";
 
 interface ConnectionFormProps {
   onConnected: (server: string, database: string) => void;
@@ -14,21 +17,23 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
   const [dbPassword, setDbPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedCredentials, setSavedCredentials] = useState<StoredCredentials | null>(null);
 
-  const handleConnect = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Solo CONSULTA si hay algo guardado, no conecta con nada por su cuenta.
+  useEffect(() => {
+    loadCredentials().then(setSavedCredentials);
+  }, []);
+
+  const connectWith = async (credentials: StoredCredentials) => {
     setIsConnecting(true);
     setError(null);
 
     try {
-      const result = await testConnection({
-        server,
-        database,
-        user: dbUser,
-        password: dbPassword,
-      });
+      const result = await testConnection(credentials);
       if (result.success) {
-        onConnected(server, database);
+        await saveCredentials(credentials);
+        setSavedCredentials(credentials);
+        onConnected(credentials.server, credentials.database);
       } else {
         setError(result.message);
       }
@@ -39,8 +44,38 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
     }
   };
 
+  const handleConnect = (e: React.FormEvent) => {
+    e.preventDefault();
+    connectWith({ server, database, user: dbUser, password: dbPassword });
+  };
+
+  const handleUseSaved = () => {
+    if (!savedCredentials) return;
+    // Reflejamos los valores en el formulario también, por transparencia,
+    // pero la conexión la dispara el usuario, nunca sola al cargar la pantalla.
+    setServer(savedCredentials.server);
+    setDatabase(savedCredentials.database);
+    setDbUser(savedCredentials.user);
+    setDbPassword(savedCredentials.password);
+    connectWith(savedCredentials);
+  };
+
+  const handleForgetSaved = async () => {
+    await clearCredentials();
+    setSavedCredentials(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#f4f4f5] flex items-center justify-center p-4 selection:bg-blue-100">
+      {savedCredentials && (
+        <RecentConnectionTab
+          credentials={savedCredentials}
+          onUse={handleUseSaved}
+          onForget={handleForgetSaved}
+          isConnecting={isConnecting}
+        />
+      )}
+
       <div className="w-full max-w-md bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
         <div className="bg-[#18181b] px-6 py-4 border-b border-gray-800">
           <div className="flex items-center gap-2">
@@ -52,11 +87,8 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
         </div>
 
         <form onSubmit={handleConnect} className="p-6 space-y-5">
-          {/* Aclaración explícita: esto NO es un login de usuario de la app */}
           <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2.5">
-            <p className="text-xs font-medium text-blue-900">
-              Conexión al servidor de base de datos
-            </p>
+            <p className="text-xs font-medium text-blue-900">Conexión al servidor de base de datos</p>
             <p className="text-[11px] text-blue-700 mt-0.5">
               Estas credenciales corresponden a tu servidor SQL Server, no a una cuenta personal de la aplicación.
             </p>
@@ -124,9 +156,7 @@ export function ConnectionForm({ onConnected }: ConnectionFormProps) {
           </div>
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-              {error}
-            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>
           )}
 
           <div className="pt-2">

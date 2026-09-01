@@ -21,7 +21,8 @@ public sealed class GetPhysicalInventoryUseCase
             i.NumeroPagina, i.CodigoBarra, i.Referencia,
             i.Toma1, i.Usuario1, i.Toma2, i.Usuario2,
             i.Validacion1, i.Estado, i.Existencia,
-            i.Validacion2, i.Validacion3, i.Coincidencia))
+            i.Validacion2, i.Validacion3, i.Coincidencia,
+            i.EstadoVerificacion))
             .ToList();
     }
 }

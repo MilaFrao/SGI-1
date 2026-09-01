@@ -31,7 +31,8 @@
             }
         ],
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "resources/icono.ico"
         }
     }
 }

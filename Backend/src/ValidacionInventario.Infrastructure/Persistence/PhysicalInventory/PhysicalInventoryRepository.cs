@@ -64,19 +64,37 @@ public sealed class PhysicalInventoryRepository : IPhysicalInventoryRepository
 
     public async Task<IReadOnlyList<PhysicalInventoryItem>> GetItemsAsync(
         CancellationToken cancellationToken = default)
-    {
-        var rows = await _context.PhysicalInventoryResults
-            .FromSqlRaw(RawQueryText)
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        {
+            var rows = await _context.PhysicalInventoryResults
+                .FromSqlRaw(RawQueryText)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
 
-        await _verificationRepository.GetAllAsync(cancellationToken);
+            var verificaciones = await _verificationRepository.GetAllAsync(cancellationToken);
+            var verificacionesPorClave = verificaciones.ToDictionary(v => (v.NumeroPagina, v.CodigoBarra));
 
-        return rows.Select(r => new PhysicalInventoryItem(
-            r.NumeroPagina, r.CodigoBarra, r.Referencia,
-            r.Toma1, r.Usuario1, r.Toma2, r.Usuario2,
-            r.Validacion1, r.Estado, r.Existencia,
-            r.Validacion2, r.Validacion3, r.Coincidencia))
+            return rows.Select(r =>
+            {
+                verificacionesPorClave.TryGetValue((r.NumeroPagina, r.CodigoBarra), out var v);
+
+                var estadoVerificacion = v switch
+                {
+                    null => "Pendiente",
+                    { Verificado: true } when v.Toma1Snapshot == r.Toma1
+                        && v.Toma2Snapshot == r.Toma2
+                        && v.ExistenciaSnapshot == r.Existencia
+                        && v.CoincidenciaSnapshot == r.Coincidencia => "Verificado",
+                    { Verificado: true } => "Modificado",
+                    _ => "Pendiente"
+                };
+
+                return new PhysicalInventoryItem(
+                    r.NumeroPagina, r.CodigoBarra, r.Referencia,
+                    r.Toma1, r.Usuario1, r.Toma2, r.Usuario2,
+                    r.Validacion1, r.Estado, r.Existencia,
+                    r.Validacion2, r.Validacion3, r.Coincidencia,
+                    estadoVerificacion);
+            })
             .ToList();
-    }
+        }
 }
