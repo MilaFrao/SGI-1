@@ -26,7 +26,7 @@ Detalle completo de capas, features y rutas en `docs/ESTRUCTURA_PROYECTO.md`.
 | `docs/ESTRUCTURA_PROYECTO.md` | Organización de carpetas y rutas de la API |
 | `docs/VERSION_CONTROL.md` | Reglas de Git, ramas y commits |
 
-Empezá por `GUIA_INICIO.md` si es tu primera vez en el proyecto.
+Empieza por `GUIA_INICIO.md` si es tu primera vez en el proyecto.
 
 ---
 
