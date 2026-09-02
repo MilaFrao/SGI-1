@@ -15,8 +15,15 @@ interface InventoryScreenProps {
 
 export function InventoryScreen({ server, database, onDisconnect }: InventoryScreenProps) {
   const { data, loading, error, refresh } = usePhysicalInventory();
+  const [estadoFiltro, setEstadoFiltro] = useState<"Todos" | "Correcto" | "Alerta">("Todos");
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+
+  const filteredData = data.filter((item) => {
+    if (estadoFiltro === "Todos") return true;
+    if (estadoFiltro === "Correcto") return item.estado === "Correcto";
+    return item.estado !== "Correcto";
+  });
 
   useEffect(() => {
     refresh();
@@ -64,6 +71,18 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
       </header>
 
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-end shrink-0 gap-4">
+        <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
+          <span>Estado</span>
+          <select
+            value={estadoFiltro}
+            onChange={(event) => setEstadoFiltro(event.target.value as "Todos" | "Correcto" | "Alerta")}
+            className="border border-gray-200 rounded-md bg-gray-50 px-2.5 py-1.5 text-xs text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
+          >
+            <option value="Todos">Todos</option>
+            <option value="Correcto">Correcto</option>
+            <option value="Alerta">Alerta, verificar</option>
+          </select>
+        </label>
         <div className="flex items-center gap-2">
           <ExportMenu data={data} />
           <button
@@ -85,7 +104,7 @@ export function InventoryScreen({ server, database, onDisconnect }: InventoryScr
 
       <main className="flex-1 p-6 overflow-hidden flex flex-col">
         <PhysicalInventoryTable
-          data={data}
+          data={filteredData}
           onToggleVerificado={handleToggleVerificado}
           savingKey={savingKey}
         />
